@@ -16,11 +16,13 @@ public class Main extends Applet implements Runnable
 
     private int refreshrate = 15;	           //Refresh rate for the applet screen. Do not change this value. 
 	private boolean isStopped = true;
+	private boolean doubleClickChecker = false;
     Font f = new Font ("Arial", Font.BOLD, 18);
-	
+
 	private Player player;			           //Player instance.		
-	private Ball redball;                      //Ball instance. You need to replace this with an array of balls.
-	private bounceball blueball;
+	//private Ball redball;                      //Ball instance. You need to replace this with an array of balls.
+	private bounceball blueball;				//blueball, once kind of the ball
+	private shrinkball greenball;
 	private Ball[] ball;
 	Thread th;						           //The applet thread. 
 
@@ -46,31 +48,40 @@ public class Main extends Applet implements Runnable
     	{
 
         	if (!isStopped) {
-				if (redball.userHit (e.getX(), e.getY())) {
-	        		hitnoise.play();
-
-					redball.ballWasHit ();
-
-	        	}
+//				if (redball.userHit (e.getX(), e.getY())) {
+//	        		hitnoise.play();
+//
+//					redball.ballWasHit ();
+//
+//	        	}
 	        	if(blueball.userHit(e.getX(),e.getY())){
 					hitnoise.play();
-					blueball.ballWasHit();;
+					blueball.ballWasHit();
+				}
+				if(greenball.userHit(e.getX(),e.getY())){
+	        		hitnoise.play();
+	        		greenball.ballWasHit();
 				}
 				else {
-					player.addClicks();
+
 					shotnoise.play();
 				}
+				player.addClicks();
 			}
+
 			else if (isStopped && e.getClickCount() == 2) {
+
 				isStopped = false;
-				init ();
+				if(doubleClickChecker == true) {
+					init();
+				}
 			}
 
     	}
 
-    	public void mouseReleased(MouseEvent e) 
+    	public void mouseReleased(MouseEvent e)
     	{
-           
+
     	}
         
     	public void RegisterHandler() 
@@ -81,7 +92,8 @@ public class Main extends Applet implements Runnable
 	
     /*initialize the game*/
 	public void init ()
-	{	
+	{
+
 		c = new Cursor (Cursor.CROSSHAIR_CURSOR);
 		this.setCursor (c);
 		HandleMouse hm = new HandleMouse();	
@@ -111,10 +123,12 @@ public class Main extends Applet implements Runnable
 		/* The parameters for the GameWindow constructor (x_leftout, x_rightout, y_upout, y_downout) 
 		should be initialized with the values read from the config.xml file*/	
 		gwindow = new GameWindow(10,370,45,370);
+		this.setSize(gwindow.x_rightout+30, gwindow.y_downout+30); //set the size of the applet window.
 		/* The parameters for the Ball constructor (radius, initXpos, initYpos, speedX, speedY, maxBallSpeed, color) 
 		should be initialized with the values read from the config.xml file. Note that the color value need to be converted from String to Color. */	
-		redball = new Ball(10, 190, 250, 1, -1, 2, Color.red, outnoise, player, gwindow);
-		blueball = new bounceball(12,190,150,1,1,3,Color.blue, 10, outnoise, player, gwindow);
+		//redball = new Ball(10, 190, 250, 1, -1, 2, Color.red, outnoise, player, gwindow);
+		blueball = new bounceball(12,190,150,1,1,3,superblue, 3, outnoise, player, gwindow);
+		greenball = new shrinkball(30,150,190,1,-1,2,Color.green,outnoise,player,gwindow);
 
 	}
 	
@@ -142,8 +156,9 @@ public class Main extends Applet implements Runnable
         /*This is the animation loop. It continues until the user stops or closes the applet*/
 		while (true) {
 			if (!isStopped) {
-				redball.move();
+				//redball.move();
 				blueball.move();
+				greenball.move();
 			}
             /*Display it*/
 			repaint();
@@ -172,16 +187,20 @@ public class Main extends Applet implements Runnable
 
 
 
-			redball.DrawBall(g);
+		//	redball.DrawBall(g);
 			blueball.DrawBall(g);
+			greenball.DrawBall(g);
 			
 			if (isStopped) {
 				g.setColor (Color.yellow);
 				g.drawString ("Doubleclick on Applet to start Game!", 40, 200);
 			}
+			doubleClickChecker = false;
+
 		}
 		/*if the game is over (i.e., the ball is out) display player's score*/
 		else {
+			doubleClickChecker = true;
 			g.setColor (Color.yellow);
 
 			
@@ -211,12 +230,14 @@ public class Main extends Applet implements Runnable
 		if (dbImage == null)
 		{
 			dbImage = createImage (this.getSize().width, this.getSize().height);
+
 			dbg = dbImage.getGraphics ();
 		}
 
 		
 		dbg.setColor (getBackground ());
 		dbg.fillRect (0, 0, this.getSize().width, this.getSize().height);
+
 
 		
 		dbg.setColor (getForeground());

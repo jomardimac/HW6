@@ -57,9 +57,6 @@ public class Player
 	public void addClicks(){
 		totalClicks += 1;
 	}
-	public void resetTotalClicks(){
-		totalClicks = 0;
-	}
 	public double getPercentHit() {
 		percentHit = (double) clickHit / totalClicks * 100;
 		percentHit = Math.round(percentHit);

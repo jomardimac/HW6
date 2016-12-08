@@ -50,10 +50,9 @@ public class Ball
 	/*update ball's location based on it's speed*/
 	public void move ()
 	{
-
-		pos_x += x_speed;
-		pos_y += y_speed;
-		isOut();
+		pos_x += x_speed; //this will move the position in the x axis
+		pos_y += y_speed; //this will move the position in the y axis
+		isOut(); //should see if the ball is out of the window
 
 	}
 
@@ -74,6 +73,7 @@ public class Ball
 
 		//if hit:
 		if (distance-this.radius < (int)(player.scoreConstant)) {
+
 			//add the score based on the speed:
 			player.addScore (player.scoreConstant * Math.abs(x_speed) + player.scoreConstant);
 			//at the same time, add that score for a counter to a new life:
@@ -84,7 +84,8 @@ public class Ball
 				//reset because you want it only going 100:
 				player.resetEarning();
 			}
-			player.addHit();
+			player.addHit(); //because the ball was hit, add a tick on that variable
+
 			return true;
 		}
 		//not hit:
@@ -107,11 +108,12 @@ public class Ball
 	/*check if the ball is out of the game borders. if so, game is over!*/ 
 	protected boolean isOut ()
 	{
-
+		//if the ball hits a border:
 		if ((pos_x < gameW.x_leftout) || (pos_x > gameW.x_rightout) || (pos_y < gameW.y_upout) || (pos_y > gameW.y_downout)) {
+			//go back to the initial position
 			resetBallPosition();
 			outSound.play();
-			player.updateLives(1);
+			player.updateLives(1); //ball died, user loses a life
 			if (player.getLives() == 0){
 				player.gameIsOver();
 				return true;
