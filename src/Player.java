@@ -18,6 +18,11 @@ public class Player
 		playerLives = 2; //gonna parse xml later
 		earnLives = 0; //another parse
 	}
+	public Player(int ParsedScore, int ParsedLives, int Parsedearn){
+		score = ParsedScore;
+		playerLives = ParsedLives;
+		earnLives = Parsedearn;
+	}
 
 	/* get player score*/
 	public int getScore ()

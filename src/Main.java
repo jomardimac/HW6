@@ -1,4 +1,12 @@
+/*
+NAME: Jomar Dimaculangan
+WSU ID: 11422439
+
+
+ */
+
 import java.awt.*;
+import java.security.Permission;
 import java.util.*;
 import java.applet.*;
 import java.net.*;
@@ -20,21 +28,36 @@ import org.w3c.dom.Element;
 public class Main extends Applet implements Runnable
 {
 
-/* Configuration arguments. These should be initialized with the values read from the config.xml file*/					
-    private int numBalls;
+/* Configuration arguments. These should be initialized with the values read from the config.xml file*/
+	public static int xLeftOut;
+	public static int xRightOut;
+	public static int yUpOut;
+	public static int yDownOut;
+	public static int NumLives;
+	public static int scoreEarnLife;
+	public static int numXMLBalls = 3;
+	public static int ballIDXML;
+	public static int ballTypeXML;
+	public static int bRadiusXML;
+	public static int initXpositionXML;
+	public static int initYPositionXML;
+	public static int speedXXML;
+	public static int speedYXML;
+	public static int maxBallSpdXML;
+	public static String colorBallXML;
 /*end of config arguments*/
 
     private int refreshrate = 15;	           //Refresh rate for the applet screen. Do not change this value.
-	public int numXMLBalls = 3;
+	//public int numXMLBalls = 3;
 	private boolean isStopped = true;
 	private boolean doubleClickChecker = false;
     Font f = new Font ("Arial", Font.BOLD, 18);
 
-	private Player player;			           //Player instance.		
+	public Player player;			           //Player instance.
 	//private Ball redball;                      //Ball instance. You need to replace this with an array of balls.
 	//private bounceball blueball;				//blueball, once kind of the ball
 	//private shrinkball greenball;
-	private Ball[] ball = new Ball[numXMLBalls];
+	public Ball[] ball = new Ball[numXMLBalls];
 	Thread th;						           //The applet thread. 
 
 	AudioClip shotnoise;	
@@ -129,7 +152,83 @@ public class Main extends Applet implements Runnable
     /*initialize the game*/
 	public void init ()
 	{
+		try {
+			/*XML PARSING HERE:*/
 
+			File fXmlFile = new File("C:\\Users\\Jomar\\Documents\\CptS355\\HW6\\src\\config.xml");
+
+			//File fXmlFile = new File("config.xml");
+
+			DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+			DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+			Document doc = dBuilder.parse(fXmlFile);
+
+			//optional, but recommended
+			//read this - http://stackoverflow.com/questions/13786607/normalization-in-dom-parsing-with-java-how-does-it-work
+			doc.getDocumentElement().normalize();
+
+			System.out.println("Root element :" + doc.getDocumentElement().getNodeName());
+
+			NodeList nListXLEFTOUT = doc.getElementsByTagName("x_leftout");
+			String XMLLEFTOUT = nListXLEFTOUT.item(0).getTextContent();
+			xLeftOut = Integer.parseInt(XMLLEFTOUT);
+
+
+			NodeList nListXRIGHTOUT = doc.getElementsByTagName("x_rightout");
+			String XMLRIGHTOUT = nListXRIGHTOUT.item(0).getTextContent();
+			xRightOut = Integer.parseInt(XMLRIGHTOUT);
+
+			NodeList nListYUPOUT = doc.getElementsByTagName("y_upout");
+			String XMLUPOUT = nListYUPOUT.item(0).getTextContent();
+			yUpOut = Integer.parseInt(XMLUPOUT);
+
+			NodeList nListDownOut = doc.getElementsByTagName("y_downout");
+			String XMLYDOWNOUT = nListDownOut.item(0).getTextContent();
+			yDownOut = Integer.parseInt(XMLYDOWNOUT);
+
+			NodeList nListNUMLIVES = doc.getElementsByTagName("numLives");
+			String XMLNUMLIVES = nListNUMLIVES.item(0).getTextContent();
+			NumLives = Integer.parseInt(XMLNUMLIVES);
+
+			NodeList nListSCOREEARN = doc.getElementsByTagName("score2EarnLife");
+			String XMLSCOREEARN = nListSCOREEARN.item(0).getTextContent();
+			scoreEarnLife = Integer.parseInt(XMLSCOREEARN);
+
+			NodeList nListNumBalls = doc.getElementsByTagName("numBalls");
+			String XMLNUMBALLS = nListNumBalls.item(0).getTextContent();
+			numXMLBalls = Integer.parseInt(XMLNUMBALLS);
+
+			NodeList nListBallList = doc.getElementsByTagName("Ball");
+
+			int balllistlen = nListBallList.getLength();
+			for (int temp = 0; temp < balllistlen; temp++) {
+				Node nBall = nListBallList.item(temp);
+				Element nElement = (Element) nBall;
+				String tempRad = nElement.getElementsByTagName("radius").item(0).getTextContent();
+
+				String tempType = nElement.getElementsByTagName("type").item(0).getTextContent();
+
+				String tempinitXPos = nElement.getElementsByTagName("initXpos").item(0).getTextContent();
+
+				String tempinitYPos = nElement.getElementsByTagName("initYpos").item(0).getTextContent();
+
+				String tempspeedX = nElement.getElementsByTagName("speedX").item(0).getTextContent();
+
+				String tempspeedY = nElement.getElementsByTagName("speedY").item(0).getTextContent();
+
+				String tempMaxBallSpeed = nElement.getElementsByTagName("maxBallSpeed").item(0).getTextContent();
+
+				String temmpColor = nElement.getElementsByTagName("color").item(0).getTextContent();
+
+				if (tempType == "bounceball") {
+					String temmpBounceCount = nElement.getElementsByTagName("bounceCount").item(0).getTextContent();
+
+				}
+			}
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 
 		c = new Cursor (Cursor.CROSSHAIR_CURSOR);
 		this.setCursor (c);
@@ -159,10 +258,10 @@ public class Main extends Applet implements Runnable
 		outnoise.stop();
 
 		
-		player = new Player ();
+		player = new Player (0,NumLives,scoreEarnLife);
 		/* The parameters for the GameWindow constructor (x_leftout, x_rightout, y_upout, y_downout) 
 		should be initialized with the values read from the config.xml file*/	
-		gwindow = new GameWindow(10,370,45,370);
+		gwindow = new GameWindow(xLeftOut,xRightOut,yUpOut,yDownOut);
 		this.setSize(gwindow.x_rightout+30, gwindow.y_downout+30); //set the size of the applet window.
 		/* The parameters for the Ball constructor (radius, initXpos, initYpos, speedX, speedY, maxBallSpeed, color) 
 		should be initialized with the values read from the config.xml file. Note that the color value need to be converted from String to Color. */	
