@@ -4,6 +4,16 @@ import java.applet.*;
 import java.net.*;
 import java.awt.event.MouseEvent;
 import javax.swing.event.*;
+/*for all the xml requirements:*/
+import java.io.File;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.DocumentBuilder;
+import org.w3c.dom.Document;
+import org.w3c.dom.NodeList;
+import org.w3c.dom.Node;
+import org.w3c.dom.Element;
+
+
 /*<applet code="Main" height=400 width=400></applet>*/
 
 
@@ -14,16 +24,17 @@ public class Main extends Applet implements Runnable
     private int numBalls;
 /*end of config arguments*/
 
-    private int refreshrate = 15;	           //Refresh rate for the applet screen. Do not change this value. 
+    private int refreshrate = 15;	           //Refresh rate for the applet screen. Do not change this value.
+	public int numXMLBalls = 3;
 	private boolean isStopped = true;
 	private boolean doubleClickChecker = false;
     Font f = new Font ("Arial", Font.BOLD, 18);
 
 	private Player player;			           //Player instance.		
 	//private Ball redball;                      //Ball instance. You need to replace this with an array of balls.
-	private bounceball blueball;				//blueball, once kind of the ball
-	private shrinkball greenball;
-	private Ball[] ball;
+	//private bounceball blueball;				//blueball, once kind of the ball
+	//private shrinkball greenball;
+	private Ball[] ball = new Ball[numXMLBalls];
 	Thread th;						           //The applet thread. 
 
 	AudioClip shotnoise;	
@@ -35,7 +46,10 @@ public class Main extends Applet implements Runnable
 	private Image dbImage;
 	private Graphics dbg;
 
-	
+
+
+
+
 	class HandleMouse extends MouseInputAdapter 
 	{
 
@@ -47,27 +61,49 @@ public class Main extends Applet implements Runnable
     	public void mouseClicked(MouseEvent e) 
     	{
 
+
         	if (!isStopped) {
+				for(int i = 0; i < numXMLBalls; i++){
+					if(ball[i].userHit(e.getX(),e.getY())){
+						hitnoise.play();
+						ball[i].ballWasHit();
+					}
+					else{
+						shotnoise.play();
+					}
+				}
 //				if (redball.userHit (e.getX(), e.getY())) {
 //	        		hitnoise.play();
 //
 //					redball.ballWasHit ();
 //
 //	        	}
-	        	if(blueball.userHit(e.getX(),e.getY())){
-					hitnoise.play();
-					blueball.ballWasHit();
-				}
-				if(greenball.userHit(e.getX(),e.getY())){
-	        		hitnoise.play();
-	        		greenball.ballWasHit();
-				}
-				else {
-
-					shotnoise.play();
-				}
+//	        	if(blueball.userHit(e.getX(),e.getY())){
+//					hitnoise.play();
+//					blueball.ballWasHit();
+//				}
+//				if(greenball.userHit(e.getX(),e.getY())){
+//	        		hitnoise.play();
+//	        		greenball.ballWasHit();
+//				}
+//				else {
+//
+//					shotnoise.play();
+//				}
 				player.addClicks();
+
+//				if(ball[0].userHit(e.getX(),e.getY()) || ball[1].userHit(e.getX(),e.getY())||	ball[2].userHit(e.getX(),e.getY())){
+//					hitnoise.play();
+//					ball[0].ballWasHit();
+//					ball[1].ballWasHit();
+//					ball[2].ballWasHit();
+//				}
+//				else{
+//					shotnoise.play();
+//				}
+
 			}
+
 
 			else if (isStopped && e.getClickCount() == 2) {
 
@@ -94,9 +130,13 @@ public class Main extends Applet implements Runnable
 	public void init ()
 	{
 
+
 		c = new Cursor (Cursor.CROSSHAIR_CURSOR);
 		this.setCursor (c);
-		HandleMouse hm = new HandleMouse();	
+		if(doubleClickChecker == false) {
+			HandleMouse hm = new HandleMouse();
+			doubleClickChecker = true;
+		}
 				
         Color superblue = new Color (0, 0, 255);  
 		setBackground (Color.black);
@@ -127,8 +167,11 @@ public class Main extends Applet implements Runnable
 		/* The parameters for the Ball constructor (radius, initXpos, initYpos, speedX, speedY, maxBallSpeed, color) 
 		should be initialized with the values read from the config.xml file. Note that the color value need to be converted from String to Color. */	
 		//redball = new Ball(10, 190, 250, 1, -1, 2, Color.red, outnoise, player, gwindow);
-		blueball = new bounceball(12,190,150,1,1,3,superblue, 3, outnoise, player, gwindow);
-		greenball = new shrinkball(30,150,190,1,-1,2,Color.green,outnoise,player,gwindow);
+		//blueball = new bounceball(12,190,150,1,1,3,superblue, 3, outnoise, player, gwindow);
+		//greenball = new shrinkball(30,150,190,1,-1,2,Color.green,outnoise,player,gwindow);
+		ball[0] = new Ball(10, 190, 250, 1, -1, 2, Color.red, outnoise, player, gwindow);
+		ball[1] = new bounceball(12,190,150,1,1,3,superblue, 3, outnoise, player, gwindow);
+		ball[2] = new shrinkball(30,150,190,1,-1,2,Color.green,outnoise,player,gwindow);
 
 	}
 	
@@ -157,8 +200,14 @@ public class Main extends Applet implements Runnable
 		while (true) {
 			if (!isStopped) {
 				//redball.move();
-				blueball.move();
-				greenball.move();
+				//blueball.move();
+				//greenball.move();
+				for(int i = 0; i < numXMLBalls; i++){
+					ball[i].move();
+				}
+//				ball[0].move();
+//				ball[1].move();
+//				ball[2].move();
 			}
             /*Display it*/
 			repaint();
@@ -188,19 +237,25 @@ public class Main extends Applet implements Runnable
 
 
 		//	redball.DrawBall(g);
-			blueball.DrawBall(g);
-			greenball.DrawBall(g);
+//			blueball.DrawBall(g);
+//			greenball.DrawBall(g);
+			for(int i = 0; i < numXMLBalls; i++){
+				ball[i].DrawBall(g);
+			}
+//			ball[0].DrawBall(g);
+//			ball[1].DrawBall(g);
+//			ball[2].DrawBall(g);
 			
 			if (isStopped) {
 				g.setColor (Color.yellow);
 				g.drawString ("Doubleclick on Applet to start Game!", 40, 200);
 			}
-			doubleClickChecker = false;
+
 
 		}
 		/*if the game is over (i.e., the ball is out) display player's score*/
 		else {
-			doubleClickChecker = true;
+
 			g.setColor (Color.yellow);
 
 			
